@@ -216,9 +216,9 @@ $.extend( FixedHeader.prototype, {
 				that._scroll();
 			} )
 			.on( 'resize'+this.s.namespace, function () {
-				if(this.c.scrollLeftBy)
+				if(that.c.scrollLeftBy)
 				{
-					$(this.c.scrollLeftBy).scrollLeft(0);
+					$(that.c.scrollLeftBy).scrollLeft(0);
 				}
 				that.s.position.windowHeight = $(window).height();
 
