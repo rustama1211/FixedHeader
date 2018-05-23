@@ -1,16 +1,16 @@
-/*! FixedHeader 3.1.4-dev
- * ©2009-2018 SpryMedia Ltd - datatables.net/license
+/*! FixedHeader 3.1.3
+ * ©2009-2017 SpryMedia Ltd - datatables.net/license
  */
 
 /**
  * @summary     FixedHeader
  * @description Fix a table's header or footer, so it is always visible while
  *              scrolling
- * @version     3.1.4-dev
+ * @version     3.1.3
  * @file        dataTables.fixedHeader.js
  * @author      SpryMedia Ltd (www.sprymedia.co.uk)
  * @contact     www.sprymedia.co.uk/contact
- * @copyright   Copyright 2009-2018 SpryMedia Ltd.
+ * @copyright   Copyright 2009-2017 SpryMedia Ltd.
  *
  * This source file is free software, available under the following license:
  *   MIT license - http://datatables.net/license/mit
@@ -68,7 +68,6 @@ var FixedHeader = function ( dt, config ) {
 	dt = new DataTable.Api( dt );
 
 	this.c = $.extend( true, {}, FixedHeader.defaults, config );
-
 	this.s = {
 		dt: dt,
 		position: {
@@ -213,13 +212,33 @@ $.extend( FixedHeader.prototype, {
 
 		$(window)
 			.on( 'scroll'+this.s.namespace, function () {
+				
 				that._scroll();
 			} )
 			.on( 'resize'+this.s.namespace, function () {
+				if(this.c.scrollLeftBy)
+				{
+					$(this.c.scrollLeftBy).scrollLeft(0);
+				}
 				that.s.position.windowHeight = $(window).height();
+
 				that.update();
 			} );
 
+
+		if(this.c.scrollLeftBy)
+		{
+			$(this.c.scrollLeftBy)
+			.on( 'scroll'+this.s.namespace, function () {
+				that._scroll();
+			} )
+			/*.on( 'resize'+this.s.namespace, function () {
+				$('.table-responsive.with-dropdown').scrollLeft(0);
+				//that.s.position.windowHeight = $(window).height();
+				//that.update();
+			} );*/
+		}
+	
 		var autoHeader = $('.fh-fixedHeader');
 		if ( ! this.c.headerOffset && autoHeader.length ) {
 			this.c.headerOffset = autoHeader.outerHeight();
@@ -242,7 +261,6 @@ $.extend( FixedHeader.prototype, {
 			if ( that.c.footer && that.dom.tfoot.length ) {
 				that._modeChange( 'in-place', 'footer', true );
 			}
-
 			dt.off( '.dtfc' );
 			$(window).off( that.s.namespace );
 		} );
@@ -281,7 +299,7 @@ $.extend( FixedHeader.prototype, {
 		else {
 			if ( itemDom.floating ) {
 				itemDom.placeholder.remove();
-				this._unsize( item );
+				//this._unsize( item );
 				itemDom.floating.children().detach();
 				itemDom.floating.remove();
 			}
@@ -290,7 +308,7 @@ $.extend( FixedHeader.prototype, {
 				.css( 'table-layout', 'fixed' )
 				.removeAttr( 'id' )
 				.append( itemElement )
-				.appendTo( 'body' );
+				.appendTo( '#data-table_wrapper' );
 
 			// Insert a fake thead/tfoot into the DataTable to stop it jumping around
 			itemDom.placeholder = itemElement.clone( false )
@@ -379,7 +397,6 @@ $.extend( FixedHeader.prototype, {
 
 		if ( itemDom.floating && lastScrollLeft[ item ] !== scrollLeft ) {
 			itemDom.floating.css( 'left', position.left - scrollLeft );
-
 			lastScrollLeft[ item ] = scrollLeft;
 		}
 	},
@@ -411,10 +428,6 @@ $.extend( FixedHeader.prototype, {
 		var focus = $.contains( tablePart[0], document.activeElement ) ?
 			document.activeElement :
 			null;
-		
-		if ( focus ) {
-			focus.blur();
-		}
 
 		if ( mode === 'in-place' ) {
 			// Insert the header back into the table's real header
@@ -423,13 +436,13 @@ $.extend( FixedHeader.prototype, {
 				itemDom.placeholder = null;
 			}
 
-			this._unsize( item );
+			//this._unsize( item );
 
 			if ( item === 'header' ) {
-				itemDom.host.prepend( tablePart );
+				itemDom.host.prepend( this.dom.thead );
 			}
 			else {
-				itemDom.host.append( tablePart );
+				itemDom.host.append( this.dom.tfoot );
 			}
 
 			if ( itemDom.floating ) {
@@ -475,9 +488,7 @@ $.extend( FixedHeader.prototype, {
 
 		// Restore focus if it was lost
 		if ( focus && focus !== document.activeElement ) {
-			setTimeout( function () {
-				focus.focus();
-			}, 10 );
+			focus.focus();
 		}
 
 		this.s.scrollLeft.header = -1;
@@ -537,7 +548,7 @@ $.extend( FixedHeader.prototype, {
 	_scroll: function ( forceChange )
 	{
 		var windowTop = $(document).scrollTop();
-		var windowLeft = $(document).scrollLeft();
+		var windowLeft =  (this.c.scrollLeftBy) ? $(this.c.scrollLeftBy).scrollLeft() : $(document).scrollLeft();
 		var position = this.s.position;
 		var headerMode, footerMode;
 
@@ -559,7 +570,6 @@ $.extend( FixedHeader.prototype, {
 			if ( forceChange || headerMode !== this.s.headerMode ) {
 				this._modeChange( headerMode, 'header', forceChange );
 			}
-
 			this._horizontal( 'header', windowLeft );
 		}
 
@@ -589,7 +599,7 @@ $.extend( FixedHeader.prototype, {
  * @type {String}
  * @static
  */
-FixedHeader.version = "3.1.4-dev";
+FixedHeader.version = "3.1.3";
 
 /**
  * Defaults
@@ -600,7 +610,8 @@ FixedHeader.defaults = {
 	header: true,
 	footer: false,
 	headerOffset: 0,
-	footerOffset: 0
+	footerOffset: 0,
+	scrollLeftBy: false,
 };
 
 
