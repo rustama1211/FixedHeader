@@ -77,6 +77,7 @@ var FixedHeader = function ( dt, config ) {
 			tfootBottom: 0,
 			width: 0,
 			left: 0,
+			lastScrollLeft:0,
 			tfootHeight: 0,
 			theadHeight: 0,
 			windowHeight: $(window).height(),
@@ -212,7 +213,6 @@ $.extend( FixedHeader.prototype, {
 
 		$(window)
 			.on( 'scroll'+this.s.namespace, function () {
-				
 				that._scroll();
 			} )
 			.on( 'resize'+this.s.namespace, function () {
@@ -223,6 +223,7 @@ $.extend( FixedHeader.prototype, {
 				that.s.position.windowHeight = $(window).height();
 
 				that.update();
+
 			} );
 
 
@@ -250,6 +251,10 @@ $.extend( FixedHeader.prototype, {
 		}
 
 		dt.on( 'column-reorder.dt.dtfc column-visibility.dt.dtfc draw.dt.dtfc column-sizing.dt.dtfc', function () {
+			/*if(that.c.scrollLeftBy)
+			{
+				$(that.c.scrollLeftBy).scrollLeft(0);
+			}*/
 			that.update();
 		} );
 
@@ -389,15 +394,36 @@ $.extend( FixedHeader.prototype, {
 	 * @param  {int}    scrollLeft Document scrollLeft
 	 * @private
 	 */
-	_horizontal: function ( item, scrollLeft )
+	_horizontal: function ( item, scrollLeft,forceChange )
 	{
 		var itemDom = this.dom[ item ];
 		var position = this.s.position;
 		var lastScrollLeft = this.s.scrollLeft;
 
 		if ( itemDom.floating && lastScrollLeft[ item ] !== scrollLeft ) {
-			itemDom.floating.css( 'left', position.left - scrollLeft );
+				if(forceChange)
+				{
+					itemDom.floating.css( 'left', position.left);
+					 position.left = position.left+lastScrollLeft[ item ];
+					// console.log('fdsfsdfOOO', position.left,lastScrollLeft[ item ])
+				}
+				else
+				{
+					itemDom.floating.css( 'left', position.left - scrollLeft  );//
+				}
+			 
+			//console.log('fgdfgdg', scrollLeft,'||',this.s.scrollLeft);
 			lastScrollLeft[ item ] = scrollLeft;
+			//console.log('fglhkgfolhkl', scrollLeft,'||',this.s.scrollLeft);
+		}
+		else
+		{
+			if(forceChange)
+				{
+					itemDom.floating.css( 'left', position.left);
+					 position.left = position.left+lastScrollLeft[ item ];
+					 //console.log('fdsfsdfOOO', position.left,lastScrollLeft[ item ])
+				}
 		}
 	},
 
@@ -491,8 +517,8 @@ $.extend( FixedHeader.prototype, {
 			focus.focus();
 		}
 
-		this.s.scrollLeft.header = -1;
-		this.s.scrollLeft.footer = -1;
+		//this.s.scrollLeft.header = -1;
+		//this.s.scrollLeft.footer = -1;
 		this.s[item+'Mode'] = mode;
 	},
 
@@ -519,7 +545,9 @@ $.extend( FixedHeader.prototype, {
 
 		position.visible = tableNode.is(':visible');
 		position.width = tableNode.outerWidth();
-		position.left = tableNode.offset().left;
+		
+		position.left = (this.c.scrollLeftBy && $(this.c.scrollLeftBy).scrollLeft() >0 && $(this.c.scrollLeftBy).scrollLeft(0)) ? ( tableNode.offset().left  -this.s.scrollLeft['header'] ) : tableNode.offset().left;
+		//console.log('VM<DLVMKVMDK',this.s.scrollLeft['header'],position.left  );
 		position.theadTop = thead.offset().top;
 		position.tbodyTop = tbody.offset().top;
 		position.theadHeight = position.tbodyTop - position.theadTop;
@@ -547,6 +575,7 @@ $.extend( FixedHeader.prototype, {
 	 */
 	_scroll: function ( forceChange )
 	{
+		//console.log('VNDKNGV',forceChange , this.s.scrollLeft['header'] != windowLeft , this.s.scrollLeft['header'] > 0,this.s.scrollLeft['header']);
 		var windowTop = $(document).scrollTop();
 		var windowLeft =  (this.c.scrollLeftBy) ? $(this.c.scrollLeftBy).scrollLeft() : $(document).scrollLeft();
 		var position = this.s.position;
@@ -570,7 +599,15 @@ $.extend( FixedHeader.prototype, {
 			if ( forceChange || headerMode !== this.s.headerMode ) {
 				this._modeChange( headerMode, 'header', forceChange );
 			}
-			this._horizontal( 'header', windowLeft );
+
+			if(forceChange && this.s.scrollLeft['header'] != windowLeft && this.s.scrollLeft['header'] > 0)
+			{
+				windowLeft = this.s.scrollLeft['header'];
+				$(this.c.scrollLeftBy).scrollLeft(windowLeft);
+			}
+			//console.log('fsdfdsf', windowLeft);
+
+			this._horizontal( 'header', windowLeft ,forceChange);
 		}
 
 		if ( this.c.footer && this.dom.tfoot.length ) {
@@ -588,7 +625,7 @@ $.extend( FixedHeader.prototype, {
 				this._modeChange( footerMode, 'footer', forceChange );
 			}
 
-			this._horizontal( 'footer', windowLeft );
+			this._horizontal( 'footer', windowLeft ,forceChange);
 		}
 	}
 } );
