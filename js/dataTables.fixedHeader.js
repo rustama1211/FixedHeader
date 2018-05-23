@@ -413,7 +413,7 @@ $.extend( FixedHeader.prototype, {
 		}
 		else
 		{
-			if(forceChange)
+			if(forceChange && itemDom.floating)
 				{
 					itemDom.floating.css( 'left', position.left);
 					 position.left = position.left+lastScrollLeft[ item ];
