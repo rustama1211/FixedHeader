@@ -308,7 +308,7 @@ $.extend( FixedHeader.prototype, {
 				.css( 'table-layout', 'fixed' )
 				.removeAttr( 'id' )
 				.append( itemElement )
-				.appendTo( '#data-table_wrapper' );
+				.appendTo((this.c.scrollLeftBy)? $(this.c.scrollLeftBy).parent() :$('body') );
 
 			// Insert a fake thead/tfoot into the DataTable to stop it jumping around
 			itemDom.placeholder = itemElement.clone( false )
