@@ -415,9 +415,13 @@ $.extend( FixedHeader.prototype, {
 		{
 			if(forceChange && itemDom.floating)
 				{
-					itemDom.floating.css( 'left', position.left);
+					 itemDom.floating.css( 'left', position.left);
 					 position.left = position.left+lastScrollLeft[ item ];
 					 //console.log('fdsfsdfOOO', position.left,lastScrollLeft[ item ])
+				}
+				else if (itemDom.floating)
+				{
+					itemDom.floating.css( 'left', position.left - scrollLeft  );//
 				}
 		}
 	},
